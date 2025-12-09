@@ -13,6 +13,20 @@ mkdir -p storage/framework/sessions
 mkdir -p storage/framework/views
 mkdir -p storage/logs
 mkdir -p bootstrap/cache
+mkdir -p storage/app/firebase
+
+# إنشاء service-account.json من Environment Variable إذا كان موجوداً
+if [ -n "$FIREBASE_SERVICE_ACCOUNT" ]; then
+    echo "Creating service-account.json from environment variable..."
+    echo "$FIREBASE_SERVICE_ACCOUNT" > storage/app/firebase/service-account.json
+    chmod 600 storage/app/firebase/service-account.json
+    echo "service-account.json created successfully"
+elif [ -n "$FIREBASE_SERVICE_ACCOUNT_BASE64" ]; then
+    echo "Creating service-account.json from base64 encoded environment variable..."
+    echo "$FIREBASE_SERVICE_ACCOUNT_BASE64" | base64 -d > storage/app/firebase/service-account.json
+    chmod 600 storage/app/firebase/service-account.json
+    echo "service-account.json created successfully from base64"
+fi
 
 # إصلاح الصلاحيات
 chown -R www-data:www-data /var/www/html

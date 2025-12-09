@@ -57,8 +57,31 @@ SESSION_LIFETIME=120
 - اربطه مع service الرئيسي
 - Railway سيعطي متغيرات DB_* تلقائياً
 
-### 4. إعداد Firebase:
-- ارفع `service-account.json` إلى Railway Volume أو استخدم Firebase Admin SDK مع environment variables
+### 4. إعداد Firebase Service Account:
+
+**الطريقة 1: Environment Variable (مستحسن)**
+
+في Railway Dashboard → Variables، أضف:
+
+```env
+# نسخ محتوى service-account.json كامل (JSON كـ string)
+FIREBASE_SERVICE_ACCOUNT={"type":"service_account","project_id":"foodgo-e1252",...}
+```
+
+**أو استخدام Base64:**
+
+```env
+# Encode الملف أولاً: base64 -i service-account.json
+FIREBASE_SERVICE_ACCOUNT_BASE64=eyJ0eXBlIjoic2VydmljZV9hY2NvdW50Ii...
+```
+
+**الطريقة 2: Volume (Railway)**
+
+1. في Railway → Service → Volumes
+2. أضف Volume: `/var/www/html/storage/app/firebase`
+3. ارفع `service-account.json` يدوياً
+
+**📖 للمزيد من التفاصيل**: راجع `FIREBASE_SERVICE_ACCOUNT_GUIDE.md`
 
 ### 5. النشر:
 - Railway سيبني المشروع تلقائياً من Dockerfile
