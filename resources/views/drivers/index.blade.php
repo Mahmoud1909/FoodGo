@@ -104,6 +104,14 @@
 @endsection
 @section('scripts')
     <script type="text/javascript">
+        // Debug helper logs added to surface client-side errors and network/XHR failures
+        console.log('[DRIVERS] Script start. Type:', "{{ $type }}");
+        window.addEventListener('error', function(e) {
+            console.error('[Global Error]', e.message || e, e.filename, e.lineno, e.colno, e.error && e.error.stack ? e.error.stack : null);
+        });
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('[Unhandled Rejection]', e.reason);
+        });
         var database = null;
         var type = "{{ $type }}";
         var ref = null;
@@ -111,7 +119,12 @@
         var append_list = '';
         var placeholderImage = '';
         var user_permissions = '<?php echo @session('user_permissions'); ?>';
-        user_permissions = Object.values(JSON.parse(user_permissions));
+        try {
+            user_permissions = Object.values(JSON.parse(user_permissions));
+        } catch (err) {
+            console.error('[DRIVERS] Failed to parse user_permissions:', user_permissions, err);
+            user_permissions = [];
+        }
         var checkDeletePermission = false;
         if (
             (type == 'pending' && $.inArray('pending.driver.delete', user_permissions) >= 0) ||
@@ -214,8 +227,18 @@
             $('#driverTable').DataTable().ajax.reload();
         });
         $(document).ready(function() {
+            console.log('[DRIVERS] document ready. type:', type);
+            // Global AJAX error logging (jQuery)
+            $(document).ajaxError(function(event, jqxhr, settings, thrownError) {
+                try {
+                    var responseText = jqxhr && jqxhr.responseText ? jqxhr.responseText.substring(0, 3000) : '';
+                } catch (e) {
+                    var responseText = '';
+                }
+                console.error('[AJAX ERROR]', settings && settings.url, 'status:', jqxhr && jqxhr.status, 'error:', thrownError, 'responseTextPreview:', responseText);
+            });
             jQuery("#data-table_processing").show();
-            $(document).on('click', '.dt-button-collection .dt-button', function() {
+            $(document).on('click', '.dt-button-collection .dt-button', function() { 
                 $('.dt-button-collection').hide();
                 $('.dt-button-background').hide();
             });
@@ -386,12 +409,26 @@
                                         statusIcon = 'mdi-clock-outline';
                                         statusColor = '#ffc107';
                                     }
-                                    return '<span class="action-btn"><a href="' + driverView + '"><i class="mdi mdi-eye"></i></a><div class="dropdown" style="display: inline-block;"><a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown" driver_id="' + childData.id + '" approval_status="' + currentStatus + '" name="driver-status-dropdown" title="Change Status"><i class="mdi ' + statusIcon + '" style="color: ' + statusColor + '; font-size: 18px;"></i></a><ul class="dropdown-menu status-dropdown-menu" role="menu"><li><a href="javascript:void(0)" class="status-option-driver-list" data-status="waiting" data-driver-id="' + childData.id + '"><i class="mdi mdi-clock-outline" style="color: #ffc107;"></i> Waiting</a></li><li><a href="javascript:void(0)" class="status-option-driver-list" data-status="rejected" data-driver-id="' + childData.id + '"><i class="mdi mdi-close-circle" style="color: #dc3545;"></i> Rejected</a></li><li><a href="javascript:void(0)" class="status-option-driver-list" data-status="approved" data-driver-id="' + childData.id + '"><i class="mdi mdi-check-circle" style="color: #2c9653;"></i> Approved</a></li></ul></div><?php if (in_array('driver.delete', json_decode(@session('user_permissions'), true))) { ?> <a id="' + childData.id + '" name="driver-delete" class="delete-btn" href="javascript:void(0)"><i class="mdi mdi-delete"></i></a><?php } ?>'+  '<?php if (in_array("drivers.chat", (array) json_decode(@session("user_permissions"), true))) { ?>' +
-                                })() +
-                            '<a href="' + chatViewRoute + '" class="chat-message" style="position: relative; display: inline-block;">' +
-                            '<i class="mdi mdi-wechat mdi-24px"></i>' + unreadHtml +
-                            '</a>' +
-                            '<?php } ?>' + '</span>'
+                                    var actionHtml = '<span class="action-btn">';
+                                    actionHtml += '<a href="' + driverView + '"><i class="mdi mdi-eye"></i></a>';
+                                    actionHtml += '<div class="dropdown" style="display: inline-block;">' +
+                                        '<a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown" driver_id="' + childData.id + '" approval_status="' + currentStatus + '" name="driver-status-dropdown" title="Change Status">' +
+                                        '<i class="mdi ' + statusIcon + '" style="color: ' + statusColor + '; font-size: 18px;"></i></a>' +
+                                        '<ul class="dropdown-menu status-dropdown-menu" role="menu">' +
+                                        '<li><a href="javascript:void(0)" class="status-option-driver-list" data-status="waiting" data-driver-id="' + childData.id + '"><i class="mdi mdi-clock-outline" style="color: #ffc107;"></i> Waiting</a></li>' +
+                                        '<li><a href="javascript:void(0)" class="status-option-driver-list" data-status="rejected" data-driver-id="' + childData.id + '"><i class="mdi mdi-close-circle" style="color: #dc3545;"></i> Rejected</a></li>' +
+                                        '<li><a href="javascript:void(0)" class="status-option-driver-list" data-status="approved" data-driver-id="' + childData.id + '"><i class="mdi mdi-check-circle" style="color: #2c9653;"></i> Approved</a></li>' +
+                                        '</ul></div>';
+                                    if (user_permissions && user_permissions.includes('driver.delete')) {
+                                        actionHtml += '<a id="' + childData.id + '" name="driver-delete" class="delete-btn" href="javascript:void(0)"><i class="mdi mdi-delete"></i></a>';
+                                    }
+                                    if (user_permissions && user_permissions.includes('drivers.chat')) {
+                                        actionHtml += '<a href="' + chatViewRoute + '" class="chat-message" style="position: relative; display: inline-block;">' +
+                                            '<i class="mdi mdi-wechat mdi-24px"></i>' + unreadHtml + '</a>';
+                                    }
+                                    actionHtml += '</span>';
+                                    return actionHtml;
+                                })()
                             ]);
                         });
                         $('#data-table_processing').hide(); // Hide loader
@@ -406,8 +443,12 @@
                         console.error('❌ [DRIVERS] ========================================');
                         console.error('❌ [DRIVERS] Error fetching data from Firestore');
                         console.error('❌ [DRIVERS] ========================================');
-                        console.error('❌ [DRIVERS] Error Code:', error.code);
-                        console.error('❌ [DRIVERS] Error Message:', error.message);
+                        console.error('❌ [DRIVERS] Error Code:', error && error.code);
+                        console.error('❌ [DRIVERS] Error Message:', error && error.message);
+                        console.error('❌ [DRIVERS] Full error object:', error);
+                        if (error && error.stack) {
+                            console.error('❌ [DRIVERS] Stack trace:', error.stack);
+                        }
                         
                         if (error.code === 'permission-denied') {
                             console.error('🚫 [DRIVERS] ========================================');
@@ -586,170 +627,6 @@
                         await deleteDocumentWithImage('users', dataId, 'profilePictureURL');
                         const getStoreName = deleteDriverData(dataId);
                         setTimeout(function() {
-                            window.location.reload();
-                        }, 7000);
-                    });
-                }
-            } else {
-                alert("{{ trans('lang.select_delete_alert') }}");
-            }
-        });
-        $(document.body).on('click', '.redirecttopage', function() {
-            var url = $(this).attr('data-url');
-            window.location.href = url;
-        });
-        $(document).on("click", "a[name='driver-delete']", async function(e) {
-            var id = this.id;
-            await deleteDocumentWithImage('users', id, 'profilePictureURL');
-            deleteDriverData(id).then(function() {
-                setTimeout(function() {
-                    window.location.reload();
-                }, 9000);
-            });
-        });
-        async function deleteDriverData(driverId) {
-            //delete user from authentication  
-            var dataObject = {
-                "data": {
-                    "uid": driverId
-                }
-            };
-            var projectId = '<?php echo env('FIREBASE_PROJECT_ID'); ?>';
-            jQuery.ajax({
-                url: 'https://us-central1-' + projectId + '.cloudfunctions.net/deleteUser',
-                method: 'POST',
-                contentType: "application/json; charset=utf-8",
-                data: JSON.stringify(dataObject),
-                success: function(data) {
-                    console.log('Delete user success:', data.result);
-                },
-                error: function(xhr, status, error) {
-                    var responseText = JSON.parse(xhr.responseText);
-                    console.log('Delete user error:', responseText.error);
-                }
-            });
-            await database.collection('wallet').where('user_id', '==', driverId).get().then(async function(snapshotsItem) {
-                if (snapshotsItem.docs.length > 0) {
-                    snapshotsItem.docs.forEach((temData) => {
-                        var item_data = temData.data();
-                        database.collection('wallet').doc(item_data.id).delete().then(function() {});
-                    });
-                }
-            });
-            await database.collection('driver_payouts').where('driverID', '==', driverId).get().then(async function(snapshotsItem) {
-                if (snapshotsItem.docs.length > 0) {
-                    snapshotsItem.docs.forEach((temData) => {
-                        var item_data = temData.data();
-                        database.collection('driver_payouts').doc(item_data.id).delete().then(function() {});
-                    });
-                }
-            });
-        }
-
-        function searchclear() {
-            jQuery("#search").val('');
-            searchtext();
-        }
-        
-        // Status Change Handler for Drivers
-        $(document).on("click", "a[name='driver-status-change']", async function(e) {
-            e.preventDefault();
-            var driverId = $(this).attr('driver_id');
-            var currentStatus = $(this).attr('approval_status') || 'waiting';
-            
-            var statusOptions = ['waiting', 'rejected', 'approved'];
-            var statusLabels = {
-                'waiting': 'Waiting',
-                'rejected': 'Rejected',
-                'approved': 'Approved'
-            };
-            
-            var currentIndex = statusOptions.indexOf(currentStatus);
-            var nextIndex = (currentIndex + 1) % statusOptions.length;
-            var nextStatus = statusOptions[nextIndex];
-            
-            if (!confirm('Change status from ' + statusLabels[currentStatus] + ' to ' + statusLabels[nextStatus] + '?')) {
-                return;
-            }
-            
-            jQuery("#data-table_processing").show();
-            
-            try {
-                if (database) {
-                    await database.collection('users').doc(driverId).update({
-                        'approvalStatus': nextStatus
-                    });
-                    alert('Status changed to ' + statusLabels[nextStatus]);
-                    if ($.fn.DataTable.isDataTable('#driverTable')) {
-                        $('#driverTable').DataTable().ajax.reload(null, false);
-                    }
-                }
-            } catch (error) {
-                console.error('❌ Error changing driver status:', error);
-                alert('Error changing status: ' + error.message);
-            } finally {
-                jQuery("#data-table_processing").hide();
-            }
-        });
-        
-        } // End of initDriversPage
-    </script>
-@endsection
-
-@section('styles')
-<style>
-    .status-dropdown-menu {
-        min-width: 180px;
-        padding: 5px 0;
-        margin: 2px 0 0;
-        background-color: #fff;
-        border: 1px solid rgba(0,0,0,.15);
-        border-radius: 4px;
-        box-shadow: 0 6px 12px rgba(0,0,0,.175);
-        z-index: 1000;
-    }
-    
-    .status-dropdown-menu li {
-        list-style: none;
-    }
-    
-    .status-dropdown-menu li a {
-        display: block;
-        padding: 8px 20px;
-        clear: both;
-        font-weight: normal;
-        line-height: 1.42857143;
-        color: #333;
-        white-space: nowrap;
-        text-decoration: none;
-    }
-    
-    .status-dropdown-menu li a:hover {
-        background-color: #f5f5f5;
-        color: #2c9653;
-    }
-    
-    .status-dropdown-menu li a .mdi {
-        margin-right: 8px;
-        font-size: 18px;
-        vertical-align: middle;
-    }
-    
-    .dropdown {
-        position: relative;
-        display: inline-block;
-    }
-    
-    .dropdown-toggle {
-        cursor: pointer;
-    }
-    
-    .dropdown-menu.show {
-        display: block;
-    }
-</style>
-@endsection
-
                             window.location.reload();
                         }, 7000);
                     });
