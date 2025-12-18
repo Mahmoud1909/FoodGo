@@ -34,16 +34,23 @@ class FirestoreHelper
         $serviceAccountPath = config('firebase.service_account_path', storage_path('app/firebase/service-account.json'));
         
         try {
+            // If the Google Cloud Firestore PHP client is not installed, avoid a fatal Error
+            if (!class_exists(\Google\Cloud\Firestore\FirestoreClient::class)) {
+                logger()->error('Missing Google Cloud Firestore PHP client. Run: composer require google/cloud-firestore and composer install on the server, or deploy vendor/ from a build machine.');
+                $initializationFailed = true;
+                return null;
+            }
+
             if (file_exists($serviceAccountPath)) {
                 $factory = (new Factory)->withServiceAccount($serviceAccountPath);
             } else {
                 // Try to use project ID only (for basic operations)
                 $factory = (new Factory)->withProjectId($projectId);
             }
-            
+
             $firestore = $factory->createFirestore();
             return $firestore;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             logger()->error('Firebase initialization error', ['error' => $e->getMessage()]);
             $initializationFailed = true;
             // Don't throw exception - return null instead to prevent 500 errors
@@ -181,7 +188,7 @@ class FirestoreHelper
             }
             
             return null;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // Log error but don't throw - return null to prevent 500 errors
             logger()->error('Firestore getDocument error', ['path' => $path, 'error' => $e->getMessage()]);
             return null;
@@ -215,7 +222,7 @@ class FirestoreHelper
             }
             
             return $documents;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // Log error but don't throw - return empty array to prevent 500 errors
             logger()->error('Firestore getCollection error', ['collection' => $collection, 'error' => $e->getMessage()]);
             return [];
@@ -227,6 +234,12 @@ class FirestoreHelper
     {
         try {
             $firestore = self::getFirestore();
+
+            // If Firestore is not available, return empty array
+            if ($firestore === null) {
+                return [];
+            }
+
             $database = $firestore->database();
             
             $query = $database->collection($collection);
@@ -268,7 +281,7 @@ class FirestoreHelper
             }
             
             return $documents;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             logger()->error('Firestore queryCollection error', [
                 'collection' => $collection,
                 'field' => $field,
@@ -284,6 +297,11 @@ class FirestoreHelper
     {
         try {
             $firestore = self::getFirestore();
+
+            if ($firestore === null) {
+                return null;
+            }
+
             $database = $firestore->database();
             
             $pathParts = explode('/', $path);
@@ -299,7 +317,7 @@ class FirestoreHelper
             }
             
             return null;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             logger()->error('Firestore setDocument error', ['path' => $path, 'error' => $e->getMessage()]);
             return null;
         }
