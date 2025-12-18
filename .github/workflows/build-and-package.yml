@@ -15,7 +15,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: '8.2'
           extensions: mbstring, curl, json, openssl
 
       - name: Cache composer
@@ -29,9 +29,9 @@ jobs:
       - name: Ensure composer.lock contains new packages
         run: |
           set -e
-          # Try updating only the missing package to avoid full dependency churn
-          composer update google/cloud-firestore --no-dev --with-dependencies --optimize-autoloader --no-interaction || true
-          # Fallback to install if update didn't produce vendor
+          # Update the Firestore package and allow updating root deps if required
+          composer update google/cloud-firestore -W --no-dev --optimize-autoloader --no-interaction || true
+          # Fallback to install if vendor not present
           if [ ! -d vendor ] || [ ! -f vendor/autoload.php ]; then
             composer install --no-dev --optimize-autoloader --no-interaction
           fi
