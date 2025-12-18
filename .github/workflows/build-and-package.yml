@@ -18,6 +18,19 @@ jobs:
           php-version: '8.2'
           extensions: mbstring, curl, json, openssl
 
+      - name: Install grpc & protobuf (PECL) for PHP
+        run: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y php8.2-dev php-pear build-essential autoconf pkg-config libgrpc-dev || true
+          # Install grpc and protobuf via pecl
+          printf "\n" | sudo pecl install grpc || true
+          printf "\n" | sudo pecl install protobuf || true
+          # Enable extensions for CLI and FPM if paths exist
+          if [ -d "/etc/php/8.2/cli/conf.d" ]; then echo "extension=grpc.so" | sudo tee /etc/php/8.2/cli/conf.d/20-grpc.ini; echo "extension=protobuf.so" | sudo tee /etc/php/8.2/cli/conf.d/20-protobuf.ini; fi
+          if [ -d "/etc/php/8.2/fpm/conf.d" ]; then echo "extension=grpc.so" | sudo tee /etc/php/8.2/fpm/conf.d/20-grpc.ini; echo "extension=protobuf.so" | sudo tee /etc/php/8.2/fpm/conf.d/20-protobuf.ini; fi
+          php -m | grep -E 'grpc|protobuf' || true
+
       - name: Cache composer
         uses: actions/cache@v4
         with:
