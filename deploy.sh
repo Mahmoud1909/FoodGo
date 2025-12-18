@@ -39,9 +39,20 @@ fi
 
 # 1. تحديث التبعيات
 echo -e "${YELLOW}📦 تحديث التبعيات...${NC}"
-composer install --optimize-autoloader --no-dev
+# Clean vendor directory to avoid permission/delete issues during install
+if [ -d vendor ]; then
+    echo -e "${YELLOW}🧹 تنظيف مجلد vendor...${NC}"
+    rm -rf vendor || {
+        echo -e "${YELLOW}⚠️  تعذر حذف vendor مباشرةً — محاولة تعديل صلاحيات Daarna...${NC}"
+        sudo chown -R $(whoami) vendor || true
+        rm -rf vendor || true
+    }
+fi
+# Ensure composer uses prefer-dist and no-interaction to be stable in CI
+composer install --optimize-autoloader --no-dev --prefer-dist --no-interaction
 if [ $? -ne 0 ]; then
     echo -e "${RED}❌ فشل تحديث التبعيات${NC}"
+    echo -e "${YELLOW}🔧 حاول تشغيل: sudo chown -R <deploy-user>:<group> . && composer install --no-interaction --prefer-dist${NC}"
     exit 1
 fi
 echo -e "${GREEN}✅ تم تحديث التبعيات${NC}"
