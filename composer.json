@@ -10,13 +10,11 @@
   "require": {
     "php": "^8.2",
     "braintree/braintree_php": "^6.7",
-    "google/cloud-core": "^1.53",
-    "google/cloud-firestore": "^1.31",
+    "google/apiclient": "^2.16",
+    "google/auth": "^1.0",
     "google/cloud-storage": "^1.41",
-    "google/cloud-functions": "^1.0",
     "guzzlehttp/guzzle": "^7.2",
     "illuminate/support": "^10.0",
-    "kreait/firebase-php": "^7.23.0",
     "laravel/framework": "^10.10",
     "laravel/sanctum": "^3.3",
     "laravel/tinker": "^2.8",
@@ -41,9 +39,7 @@
       "App\\": "app/",
       "Modules\\": "Modules/",
       "Database\\Factories\\": "database/factories/",
-      "Database\\Seeders\\": "database/seeders/",
-      "Google\\Cloud\\Core\\": "vendor/google/cloud-core/src",
-      "Google\\Cloud\\Firestore\\": "vendor/google/cloud-firestore/src"
+      "Database\\Seeders\\": "database/seeders/"
     },
     "files": []
   },

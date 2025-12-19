@@ -3,59 +3,62 @@
 namespace App\Helpers;
 
 use Illuminate\Support\Facades\Http;
-use Kreait\Firebase\Factory;
+use Google\Auth\Credentials\ServiceAccountCredentials;
 
 class FirestoreHelper
 {
-    protected static function getFirestore()
+    protected static function getAccessToken(): ?string
     {
-        static $firestore = null;
-        static $initializationFailed = false;
-        
-        // If initialization failed before, don't try again
-        if ($initializationFailed) {
-            return null;
+        static $token = null;
+        static $tokenExpiresAt = null;
+
+        if (is_string($token) && is_int($tokenExpiresAt) && time() < ($tokenExpiresAt - 60)) {
+            return $token;
         }
-        
-        if ($firestore !== null) {
-            return $firestore;
-        }
-        
-        // Use config file if available, otherwise fallback to env
-        $projectId = config('firebase.project_id', env('FIREBASE_PROJECT_ID'));
-        
-        if (empty($projectId)) {
-            logger()->warning('FIREBASE_PROJECT_ID not set. Please check your .env file or config/firebase.php');
-            $initializationFailed = true;
-            return null;
-        }
-        
-        // Try to use service account JSON file if available
+
         $serviceAccountPath = config('firebase.service_account_path', storage_path('app/firebase/service-account.json'));
-        
+
+        if (!is_string($serviceAccountPath) || $serviceAccountPath === '' || !file_exists($serviceAccountPath)) {
+            logger()->error('Firebase initialization error', ['error' => 'Service account JSON not found at: ' . (string) $serviceAccountPath]);
+            return null;
+        }
+
         try {
-            // If the Google Cloud Firestore PHP client is not installed, avoid a fatal Error
-            if (!class_exists(\Google\Cloud\Firestore\FirestoreClient::class)) {
-                logger()->error('Missing Google Cloud Firestore PHP client. Run: composer require google/cloud-firestore and composer install on the server, or deploy vendor/ from a build machine.');
-                $initializationFailed = true;
+            $scopes = ['https://www.googleapis.com/auth/datastore'];
+            $credentials = new ServiceAccountCredentials($scopes, $serviceAccountPath);
+            $auth = $credentials->fetchAuthToken();
+
+            if (!is_array($auth) || empty($auth['access_token'])) {
+                logger()->error('Firebase initialization error', ['error' => 'Failed to fetch Google access token from service account']);
                 return null;
             }
 
-            if (file_exists($serviceAccountPath)) {
-                $factory = (new Factory)->withServiceAccount($serviceAccountPath);
-            } else {
-                // Try to use project ID only (for basic operations)
-                $factory = (new Factory)->withProjectId($projectId);
-            }
+            $token = (string) $auth['access_token'];
+            $tokenExpiresAt = isset($auth['expires_in']) ? (time() + (int) $auth['expires_in']) : (time() + 3000);
 
-            $firestore = $factory->createFirestore();
-            return $firestore;
+            return $token;
         } catch (\Throwable $e) {
             logger()->error('Firebase initialization error', ['error' => $e->getMessage()]);
-            $initializationFailed = true;
-            // Don't throw exception - return null instead to prevent 500 errors
             return null;
         }
+    }
+
+    protected static function request(string $method, string $url, array $payload = null)
+    {
+        $token = self::getAccessToken();
+        if ($token === null) {
+            return null;
+        }
+
+        $req = Http::timeout(30)
+            ->withToken($token)
+            ->acceptJson();
+
+        if ($payload === null) {
+            return $req->{$method}($url);
+        }
+
+        return $req->{$method}($url, $payload);
     }
 
     protected static function baseUrl()
@@ -142,7 +145,7 @@ class FirestoreHelper
     private static function getFirestoreValue($value)
     {
         if (is_int($value)) {
-            return ['integerValue' => $value];
+            return ['integerValue' => (string) $value];
         } elseif (is_float($value)) {
             return ['doubleValue' => $value];
         } elseif (is_bool($value)) {
@@ -161,33 +164,35 @@ class FirestoreHelper
     public static function getDocument($path)
     {
         try {
-            $firestore = self::getFirestore();
-            
-            // If Firestore is not available, return null silently
-            if ($firestore === null) {
+            $projectId = config('firebase.project_id', env('FIREBASE_PROJECT_ID'));
+
+            if (empty($projectId)) {
+                logger()->warning('FIREBASE_PROJECT_ID not set. Please check your .env file or config/firebase.php');
                 return null;
             }
-            
-            $database = $firestore->database();
-            
-            if ($database === null) {
+
+            $url = rtrim(self::baseUrl(), '/') . '/' . ltrim($path, '/');
+            $res = self::request('get', $url);
+
+            if ($res === null) {
                 return null;
             }
-            
-            $pathParts = explode('/', $path);
-            $collection = $pathParts[0];
-            $documentId = $pathParts[1] ?? null;
-            
-            if ($documentId) {
-                $docRef = $database->collection($collection)->document($documentId);
-                $snapshot = $docRef->snapshot();
-                
-                if ($snapshot->exists()) {
-                    return $snapshot->data();
-                }
+
+            if ($res->status() === 404) {
+                return null;
             }
-            
-            return null;
+
+            if (!$res->successful()) {
+                logger()->error('Firestore getDocument error', ['path' => $path, 'error' => $res->body()]);
+                return null;
+            }
+
+            $doc = $res->json();
+            if (!is_array($doc) || empty($doc['fields']) || !is_array($doc['fields'])) {
+                return null;
+            }
+
+            return self::decodeFields($doc['fields']);
         } catch (\Throwable $e) {
             // Log error but don't throw - return null to prevent 500 errors
             logger()->error('Firestore getDocument error', ['path' => $path, 'error' => $e->getMessage()]);
@@ -199,28 +204,37 @@ class FirestoreHelper
     public static function getCollection($collection)
     {
         try {
-            $firestore = self::getFirestore();
-            
-            // If Firestore is not available, return empty array
-            if ($firestore === null) {
+            $projectId = config('firebase.project_id', env('FIREBASE_PROJECT_ID'));
+
+            if (empty($projectId)) {
+                logger()->warning('FIREBASE_PROJECT_ID not set. Please check your .env file or config/firebase.php');
                 return [];
             }
-            
-            $database = $firestore->database();
-            
-            if ($database === null) {
+
+            $url = rtrim(self::baseUrl(), '/') . '/' . ltrim($collection, '/');
+            $res = self::request('get', $url);
+
+            if ($res === null) {
                 return [];
             }
-            
+
+            if (!$res->successful()) {
+                logger()->error('Firestore getCollection error', ['collection' => $collection, 'error' => $res->body()]);
+                return [];
+            }
+
+            $json = $res->json();
+            if (!is_array($json) || empty($json['documents']) || !is_array($json['documents'])) {
+                return [];
+            }
+
             $documents = [];
-            $snapshot = $database->collection($collection)->documents();
-            
-            foreach ($snapshot as $doc) {
-                if ($doc->exists()) {
-                    $documents[] = $doc->data();
+            foreach ($json['documents'] as $doc) {
+                if (is_array($doc) && !empty($doc['fields']) && is_array($doc['fields'])) {
+                    $documents[] = self::decodeFields($doc['fields']);
                 }
             }
-            
+
             return $documents;
         } catch (\Throwable $e) {
             // Log error but don't throw - return empty array to prevent 500 errors
@@ -233,53 +247,70 @@ class FirestoreHelper
     public static function queryCollection($collection, $field, $op, $value)
     {
         try {
-            $firestore = self::getFirestore();
+            $projectId = config('firebase.project_id', env('FIREBASE_PROJECT_ID'));
 
-            // If Firestore is not available, return empty array
-            if ($firestore === null) {
+            if (empty($projectId)) {
+                logger()->warning('FIREBASE_PROJECT_ID not set. Please check your .env file or config/firebase.php');
                 return [];
             }
 
-            $database = $firestore->database();
-            
-            $query = $database->collection($collection);
-            
-            // Map operators to Firestore query methods
-            switch ($op) {
-                case '==':
-                    $query = $query->where($field, '=', $value);
-                    break;
-                case '>':
-                    $query = $query->where($field, '>', $value);
-                    break;
-                case '>=':
-                    $query = $query->where($field, '>=', $value);
-                    break;
-                case '<':
-                    $query = $query->where($field, '<', $value);
-                    break;
-                case '<=':
-                    $query = $query->where($field, '<=', $value);
-                    break;
-                case '!=':
-                    $query = $query->where($field, '!=', $value);
-                    break;
-                case 'array-contains':
-                    $query = $query->where($field, 'array-contains', $value);
-                    break;
-                default:
-                    $query = $query->where($field, '=', $value);
+            $opMap = [
+                '==' => 'EQUAL',
+                '=' => 'EQUAL',
+                '>' => 'GREATER_THAN',
+                '>=' => 'GREATER_THAN_OR_EQUAL',
+                '<' => 'LESS_THAN',
+                '<=' => 'LESS_THAN_OR_EQUAL',
+                '!=' => 'NOT_EQUAL',
+                'array-contains' => 'ARRAY_CONTAINS',
+            ];
+
+            $firestoreOp = $opMap[$op] ?? 'EQUAL';
+
+            $payload = [
+                'structuredQuery' => [
+                    'from' => [
+                        ['collectionId' => $collection],
+                    ],
+                    'where' => [
+                        'fieldFilter' => [
+                            'field' => ['fieldPath' => $field],
+                            'op' => $firestoreOp,
+                            'value' => self::getFirestoreValue($value),
+                        ],
+                    ],
+                ],
+            ];
+
+            $url = "https://firestore.googleapis.com/v1/projects/{$projectId}/databases/(default)/documents:runQuery";
+            $res = self::request('post', $url, $payload);
+
+            if ($res === null) {
+                return [];
             }
-            
+
+            if (!$res->successful()) {
+                logger()->error('Firestore queryCollection error', [
+                    'collection' => $collection,
+                    'field' => $field,
+                    'op' => $op,
+                    'error' => $res->body(),
+                ]);
+                return [];
+            }
+
+            $rows = $res->json();
+            if (!is_array($rows)) {
+                return [];
+            }
+
             $documents = [];
-            $snapshot = $query->documents();
-            
-            foreach ($snapshot as $doc) {
-                if ($doc->exists()) {
-                    $documents[] = $doc->data();
+            foreach ($rows as $row) {
+                if (is_array($row) && isset($row['document']) && is_array($row['document']) && !empty($row['document']['fields'])) {
+                    $documents[] = self::decodeFields($row['document']['fields']);
                 }
             }
-            
+
             return $documents;
         } catch (\Throwable $e) {
             logger()->error('Firestore queryCollection error', [
@@ -296,27 +327,41 @@ class FirestoreHelper
     public static function setDocument($path, array $data)
     {
         try {
-            $firestore = self::getFirestore();
+            $projectId = config('firebase.project_id', env('FIREBASE_PROJECT_ID'));
 
-            if ($firestore === null) {
+            if (empty($projectId)) {
+                logger()->warning('FIREBASE_PROJECT_ID not set. Please check your .env file or config/firebase.php');
                 return null;
             }
 
-            $database = $firestore->database();
-            
-            $pathParts = explode('/', $path);
-            $collection = $pathParts[0];
-            $documentId = $pathParts[1] ?? null;
-            
-            if ($documentId) {
-                $docRef = $database->collection($collection)->document($documentId);
-                $docRef->set($data, ['merge' => true]);
-                
-                $snapshot = $docRef->snapshot();
-                return $snapshot->exists() ? $snapshot->data() : null;
+            if (empty($data)) {
+                return null;
             }
-            
-            return null;
+
+            $url = rtrim(self::baseUrl(), '/') . '/' . ltrim($path, '/');
+            $mask = implode('&', array_map(static fn($k) => 'updateMask.fieldPaths=' . urlencode((string) $k), array_keys($data)));
+            if ($mask !== '') {
+                $url .= '?' . $mask;
+            }
+
+            $payload = ['fields' => self::encodeFields($data)];
+            $res = self::request('patch', $url, $payload);
+
+            if ($res === null) {
+                return null;
+            }
+
+            if (!$res->successful()) {
+                logger()->error('Firestore setDocument error', ['path' => $path, 'error' => $res->body()]);
+                return null;
+            }
+
+            $doc = $res->json();
+            if (!is_array($doc) || empty($doc['fields']) || !is_array($doc['fields'])) {
+                return null;
+            }
+
+            return self::decodeFields($doc['fields']);
         } catch (\Throwable $e) {
             logger()->error('Firestore setDocument error', ['path' => $path, 'error' => $e->getMessage()]);
             return null;

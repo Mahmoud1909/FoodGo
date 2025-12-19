@@ -2,12 +2,9 @@ name: Update Composer
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *'  # Run daily at midnight
-
+  
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   update:
@@ -40,15 +37,4 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        composer config --no-plugins allow-plugins.kylekatarnls/update-helper true
-        composer update --no-interaction --prefer-dist --optimize-autoloader
-
-    - name: Commit and push if changed
-      run: |
-        git config --global user.name 'GitHub Actions'
-        git config --global user.email 'actions@github.com'
-        git add composer.lock
-        git diff --quiet && git diff --staged --quiet || (
-          git commit -m "chore: update composer.lock"
-          git push
-        )
+        composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader

@@ -5,7 +5,7 @@ require __DIR__.'/vendor/autoload.php';
 $app = require_once __DIR__.'/bootstrap/app.php';
 $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 
-use Kreait\Firebase\Factory;
+use App\Helpers\FirestoreHelper;
 
 $restaurantId = '5KjbF2LDaEe19ttEFClo';
 
@@ -24,47 +24,26 @@ echo "   Service Account Exists: " . (file_exists($serviceAccountPath) ? 'YES' :
 // Try direct Firebase access
 echo "Connecting to Firestore...\n";
 try {
-    if (file_exists($serviceAccountPath)) {
-        $factory = (new Factory)->withServiceAccount($serviceAccountPath);
-    } else {
-        $factory = (new Factory)->withProjectId($projectId);
-    }
-    
-    $firestore = $factory->createFirestore();
-    $database = $firestore->database();
-    
-    echo "✅ Firestore connection successful\n\n";
-    
-    // Method 1: Direct document access
+    echo "✅ Firestore REST is configured (using service account)\n\n";
+
     echo "Method 1: Direct document access (vendors/{$restaurantId})...\n";
-    $docRef = $database->collection('vendors')->document($restaurantId);
-    $snapshot = $docRef->snapshot();
-    
-    if ($snapshot->exists()) {
-        $restaurant = $snapshot->data();
+    $restaurant = FirestoreHelper::getDocument('vendors/'.$restaurantId);
+    if (!empty($restaurant)) {
         echo "✅ Restaurant Data Found:\n";
         echo json_encode($restaurant, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         echo "\n\n";
         exit(0);
     }
-    
     echo "❌ Method 1: Document does not exist\n\n";
-    
-    // Method 2: Query by id field
+
     echo "Method 2: Query by 'id' field...\n";
-    $query = $database->collection('vendors')->where('id', '=', $restaurantId);
-    $snapshots = $query->documents();
-    
-    foreach ($snapshots as $doc) {
-        if ($doc->exists()) {
-            $restaurant = $doc->data();
-            echo "✅ Restaurant Data Found:\n";
-            echo json_encode($restaurant, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-            echo "\n\n";
-            exit(0);
-        }
+    $results = FirestoreHelper::queryCollection('vendors', 'id', '==', $restaurantId);
+    if (!empty($results)) {
+        echo "✅ Restaurant Data Found:\n";
+        echo json_encode($results[0], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        echo "\n\n";
+        exit(0);
     }
-    
     echo "❌ Method 2: Restaurant not found\n\n";
     
     echo "❌ Restaurant not found with ID: {$restaurantId}\n";
