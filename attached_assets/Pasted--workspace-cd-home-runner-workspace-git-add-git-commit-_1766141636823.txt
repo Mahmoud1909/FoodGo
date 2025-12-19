@@ -1,0 +1,49 @@
+~/workspace$ cd /home/runner/workspace
+git add .
+git commit -m "Fix Laravel application setup for production deployment"
+git push origin main
+On branch main
+Your branch is ahead of 'origin/main' by 3 commits.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+To https://github.com/Mahmoud1909/FoodGo
+ ! [rejected]        main -> main (fetch first)
+error: failed to push some refs to 'https://github.com/Mahmoud1909/FoodGo'
+hint: Updates were rejected because the remote contains work that you do not
+hint: have locally. This is usually caused by another repository pushing to
+hint: the same ref. If you want to integrate the remote changes, use
+hint: 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+~/workspace$ ^C
+~/workspace$ git pull origin main
+git push origin main
+remote: Enumerating objects: 27, done.
+remote: Counting objects: 100% (27/27), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 14 (delta 12), reused 14 (delta 12), pack-reused 0 (from 0)
+Unpacking objects: 100% (14/14), 999 bytes | 29.00 KiB/s, done.
+From https://github.com/Mahmoud1909/FoodGo
+ * branch            main       -> FETCH_HEAD
+   32dabe7..50d9ae9  main       -> origin/main
+hint: You have divergent branches and need to specify how to reconcile them.
+hint: You can do so by running one of the following commands sometime before
+hint: your next pull:
+hint:
+hint:   git config pull.rebase false  # merge
+hint:   git config pull.rebase true   # rebase
+hint:   git config pull.ff only       # fast-forward only
+hint:
+hint: You can replace "git config" with "git config --global" to set a default
+hint: preference for all repositories. You can also pass --rebase, --no-rebase,
+hint: or --ff-only on the command line to override the configured default per
+hint: invocation.
+fatal: Need to specify how to reconcile divergent branches.
+To https://github.com/Mahmoud1909/FoodGo
+ ! [rejected]        main -> main (non-fast-forward)
+error: failed to push some refs to 'https://github.com/Mahmoud1909/FoodGo'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. If you want to integrate the remote changes,
+hint: use 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+~/workspace$ 
