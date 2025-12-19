@@ -1,0 +1,25 @@
+modules = ["nodejs-20", "web", "php-8.2"]
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+APP_NAME = "Laravel"
+APP_ENV = "local"
+APP_DEBUG = "true"
+APP_URL = "http://0.0.0.0:5000"
+LOG_CHANNEL = "stack"
+LOG_DEPRECATIONS_CHANNEL = "null"
+LOG_LEVEL = "debug"
+DB_CONNECTION = "sqlite"
+DB_DATABASE = "database/database.sqlite"
+BROADCAST_DRIVER = "log"
+CACHE_DRIVER = "file"
+FILESYSTEM_DISK = "local"
+QUEUE_CONNECTION = "sync"
+SESSION_DRIVER = "file"
+SESSION_LIFETIME = "120"
