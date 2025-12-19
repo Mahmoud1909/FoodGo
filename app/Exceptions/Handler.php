@@ -4,7 +4,14 @@ namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Config;
 use Throwable;
+
+use function response;
+use function view;
+use function config;
+use function storage_path;
 
 class Handler extends ExceptionHandler
 {
