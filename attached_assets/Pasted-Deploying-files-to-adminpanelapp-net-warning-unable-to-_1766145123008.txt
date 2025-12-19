@@ -1,0 +1,149 @@
+Deploying files to "adminpanelapp.net"
+warning: unable to unlink '.cursor/worktrees.json': Permission denied
+warning: unable to unlink 'HOW_TO_APPLY_FIRESTORE_RULES.md': Permission denied
+warning: unable to unlink 'IMPORT_COLLECTIONS_GUIDE.md': Permission denied
+warning: unable to unlink 'LOGGING_ADDED.md': Permission denied
+warning: unable to unlink 'NEW_EDIT_PAGE_CREATED.md': Permission denied
+warning: unable to unlink 'PAGE_READY_INFO.md': Permission denied
+warning: unable to unlink 'QUICK_DEPLOYMENT_CHECKLIST.md': Permission denied
+warning: unable to unlink 'QUICK_IMPORT.md': Permission denied
+warning: unable to unlink 'RAILWAY_DEPLOYMENT.md': Permission denied
+warning: unable to unlink 'SETUP_GUIDE.md': Permission denied
+warning: unable to unlink 'STATUS_MESSAGES_ADDED.md': Permission denied
+warning: unable to unlink 'SYNTAX_ERROR_FIXED.md': Permission denied
+warning: unable to unlink 'SYNTAX_ERROR_FIXED_FINAL.md': Permission denied
+warning: unable to unlink 'SYNTAX_ERROR_FIXES.md': Permission denied
+warning: unable to unlink 'USING_ORIGINAL_EDIT_PAGE.md': Permission denied
+warning: unable to unlink 'deploy.sh': Permission denied
+warning: unable to unlink 'Ø­Ù„_Ù…Ø´ÙƒÙ„Ø©_Ù‚Ø§Ø¹Ø¯Ø©_Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª.md': Permission denied
+error: unable to unlink old '.dockerignore': Permission denied
+error: unable to unlink old '.editorconfig': Permission denied
+error: unable to unlink old '.firebaserc': Permission denied
+error: unable to unlink old '.gitattributes': Permission denied
+error: unable to unlink old '.gitignore': Permission denied
+error: unable to unlink old '.htaccess': Permission denied
+error: unable to create file .replit: Permission denied
+error: unable to unlink old '.styleci.yml': Permission denied
+error: unable to unlink old 'Dockerfile': Permission denied
+error: unable to unlink old 'Modules/AI/app/Core/Constants/AIEngine.php': Permission denied
+error: unable to unlink old 'Modules/AI/app/Core/Constants/AIEngineNames.php': Permission denied
+error: unable to unlink old 'Modules/AI/app/Core/Contracts/AIEngineInterface.php': Permission denied
+error: unable to unlink old 'Modules/AI/app/Core/Engines/OpenAIEngine.php': Permission denied
+error: unable to unlink old 'Modules/AI/app/Core/Factory/AIEngineFactory.php': Permission denied
+error: unable to unlink old 'Modules/AI/app/Http/Controllers/.gitkeep': Permission denied
+error: unable to unlink old 'Modules/AI/app/Http/Controllers/AIController.php': Permission denied
+error: unable to unlink old 'Modules/AI/app/Http/Controllers/Api/ProductAutoFillController.php': Permission denied
+error: unable to unlink old 'Modules/AI/app/Http/Controllers/ProductAutoFillController.php': Permission denied
+error: unable to unlink old 'Modules/AI/app/Http/Middleware/.gitkeep': Permission denied
+error: unable to unlink old 'Modules/AI/app/Providers/.gitkeep': Permission denied
+error: unable to unlink old 'Modules/AI/app/Providers/AIServiceProvider.php': Permission denied
+error: unable to unlink old 'Modules/AI/app/Providers/RouteServiceProvider.php': Permission denied
+error: unable to unlink old 'Modules/AI/app/Services/Products/Action/ProductAutoFillService.php': Permission denied
+error: unable to unlink old 'Modules/AI/app/Services/Products/Prompts/ProductPrompts.php': Permission denied
+error: unable to unlink old 'Modules/AI/app/Services/Products/Resource/ProductResource.php': Permission denied
+error: unable to unlink old 'Modules/AI/app/Services/Products/Response/ProductResponse.php': Permission denied
+error: unable to unlink old 'Modules/AI/app/Traits/ConversationTrait.php': Permission denied
+error: unable to unlink old 'Modules/AI/composer.json': Permission denied
+error: unable to unlink old 'Modules/AI/config/.gitkeep': Permission denied
+error: unable to unlink old 'Modules/AI/config/config.php': Permission denied
+error: unable to unlink old 'Modules/AI/database/factories/.gitkeep': Permission denied
+error: unable to unlink old 'Modules/AI/database/migrations/.gitkeep': Permission denied
+error: unable to unlink old 'Modules/AI/database/seeders/.gitkeep': Permission denied
+error: unable to unlink old 'Modules/AI/database/seeders/AIDatabaseSeeder.php': Permission denied
+error: unable to unlink old 'Modules/AI/lang/.gitkeep': Permission denied
+error: unable to unlink old 'Modules/AI/module.json': Permission denied
+error: unable to unlink old 'Modules/AI/package.json': Permission denied
+error: unable to unlink old 'Modules/AI/resources/assets/.gitkeep': Permission denied
+error: unable to unlink old 'Modules/AI/resources/assets/js/app.js': Permission denied
+error: unable to unlink old 'Modules/AI/resources/assets/sass/app.scss': Permission denied
+error: unable to unlink old 'Modules/AI/resources/views/.gitkeep': Permission denied
+error: unable to unlink old 'Modules/AI/resources/views/index.blade.php': Permission denied
+error: unable to unlink old 'Modules/AI/resources/views/layouts/master.blade.php': Permission denied
+error: unable to unlink old 'Modules/AI/routes/.gitkeep': Permission denied
+error: unable to unlink old 'Modules/AI/routes/api.php': Permission denied
+error: unable to unlink old 'Modules/AI/routes/web.php': Permission denied
+error: unable to unlink old 'Modules/AI/tests/Feature/.gitkeep': Permission denied
+error: unable to unlink old 'Modules/AI/tests/Unit/.gitkeep': Permission denied
+error: unable to unlink old 'Modules/AI/vite.config.js': Permission denied
+error: unable to unlink old 'README.md': Permission denied
+error: unable to unlink old 'SHOW_RESTAURANT_DATA_COMMANDS.txt': Permission denied
+error: unable to unlink old 'app/Console/Commands/AutoCancelOrder.php': Permission denied
+error: unable to unlink old 'app/Console/Commands/CheckFirebaseConfig.php': Permission denied
+error: unable to unlink old 'app/Console/Commands/SendScheduledOrderNotification.php': Permission denied
+error: unable to unlink old 'app/Console/Kernel.php': Permission denied
+error: unable to unlink old 'app/Exceptions/Handler.php': Permission denied
+error: unable to unlink old 'app/Helpers/FirestoreHelper.php': Permission denied
+error: unable to unlink old 'app/Helpers/FunctionHelper.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/AdminPaymentsController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/AdvertisementsController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/AttributeController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/Auth/ConfirmPasswordController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/Auth/ForgotPasswordController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/Auth/LoginController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/Auth/RegisterController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/Auth/ResetPasswordController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/Auth/VerificationController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/BookTableController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/CashbackController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/CategoryController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/CmsController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/Controller.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/CouponController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/CurrencyController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/CustomerController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/DeliverymanController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/DocumentController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/DriverController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/DriversPayoutController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/DynamicNotificationController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/FoodController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/GiftCardController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/HomeController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/LangController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/MapController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/NotificationController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/OnBoardController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/OrderController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/PaymentController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/PayoutRequestController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/RazorPayController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/ReportController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/RestaurantController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/RestaurantFiltersController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/RestaurantsPayoutController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/ReviewAttributeController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/RoleController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/SendEmailController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/SettingsController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/SubscriptionPlanController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/SupportHistoryController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/TaxController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/TermsAndConditionsController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/TransactionController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/UserController.php': Permission denied
+error: unable to unlink old 'app/Http/Controllers/ZoneController.php': Permission denied
+error: unable to unlink old 'app/Http/Kernel.php': Permission denied
+error: unable to unlink old 'app/Http/Middleware/ApiKeyAuth.php': Permission denied
+error: unable to unlink old 'app/Http/Middleware/Authenticate.php': Permission denied
+error: unable to unlink old 'app/Http/Middleware/CheckUserRoleMiddleware.php': Permission denied
+error: unable to unlink old 'app/Http/Middleware/ContentSecurityPolicy.php': Permission denied
+error: unable to unlink old 'app/Http/Middleware/EncryptCookies.php': Permission denied
+error: unable to unlink old 'app/Http/Middleware/LanguageManager.php': Permission denied
+error: unable to unlink old 'app/Http/Middleware/PermissionMiddleware.php': Permission denied
+error: unable to unlink old 'app/Http/Middleware/PreventRequestsDuringMaintenance.php': Permission denied
+error: unable to unlink old 'app/Http/Middleware/RedirectIfAuthenticated.php': Permission denied
+error: unable to unlink old 'app/Http/Middleware/TrimStrings.php': Permission denied
+error: unable to unlink old 'app/Http/Middleware/TrustHosts.php': Permission denied
+error: unable to unlink old 'app/Http/Middleware/TrustProxies.php': Permission denied
+error: unable to unlink old 'app/Http/Middleware/VerifyCsrfToken.php': Permission denied
+error: unable to unlink old 'app/Mail/SetEmailData.php': Permission denied
+error: unable to unlink old 'app/Models/Permission.php': Permission denied
+error: unable to unlink old 'app/Models/Role.php': Permission denied
+error: unable to unlink old 'app/Models/User.php': Permission denied
+error: unable to unlink old 'app/Providers/AppServiceProvider.php': Permission denied
+error: unable to unlink old 'app/Providers/AuthServiceProvider.php': Permission denied
+error: unable to unlink old 'app/Providers/BroadcastServiceProvider.php': Permission denied
+error: unable to unlink old 'app/Providers/EventServiceProvider.php': Permission denied
+error: unable to unlink old 'app/Providers/RouteServiceProvider.php': Permission denied
+error: unable to unlink old 'artisan': Permission denied
+fatal: cannot create directory at 'attached_assets': Permission denied
