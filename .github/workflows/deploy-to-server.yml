@@ -1,0 +1,83 @@
+name: Deploy to server
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    name: Deploy to server (artifact -> server)
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: php-build
+          path: ./artifacts
+
+      - name: Copy artifact to server via SCP
+        uses: appleboy/scp-action@v0.1.5
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || '22' }}
+          source: "./artifacts/build.tar.gz"
+          target: "/tmp/build.tar.gz"
+
+      - name: Extract & sync on server (SSH)
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || '22' }}
+          script: |
+            set -e
+            DEPLOY_DIR="${{ secrets.DEPLOY_PATH }}"
+            if [ -z "$DEPLOY_DIR" ]; then
+              echo "ERROR: DEPLOY_PATH secret is not set"; exit 1
+            fi
+
+            echo "Starting deploy to $DEPLOY_DIR"
+
+            # create tmp dir and extract artifact
+            TMPDIR="/tmp/deploy_$(date +%s)"
+            mkdir -p "$TMPDIR"
+            mv /tmp/build.tar.gz "$TMPDIR"/build.tar.gz
+            cd "$TMPDIR"
+            tar -xzf build.tar.gz
+
+            # sync files to deploy dir but DO NOT overwrite server-specific files:
+            # - .env (server must keep its own)
+            # - storage (keep data on server)
+            # - storage/app/firebase/service-account.json (server-managed)
+            rsync -a --delete \
+              --exclude='.env' \
+              --exclude='storage' \
+              --exclude='storage/*' \
+              --exclude='build.tar.gz' \
+              --exclude='.git' \
+              --exclude='.github' \
+              --exclude='tests' \
+              "$TMPDIR/build/" "$DEPLOY_DIR/"
+
+            # set ownership and perms (adjust www-data to your web user if different)
+            sudo chown -R www-data:www-data "$DEPLOY_DIR/storage" "$DEPLOY_DIR/bootstrap/cache" || true
+            find "$DEPLOY_DIR" -type f -exec chmod 644 {} \; || true
+            find "$DEPLOY_DIR" -type d -exec chmod 755 {} \; || true
+
+            # Run artisan tasks (no composer install here; vendor already copied)
+            cd "$DEPLOY_DIR"
+            php artisan migrate --force || true
+            php artisan config:cache || true
+            php artisan route:cache || true
+            php artisan view:cache || true
+            php artisan cache:clear || true
+
+            # Try restart php-fpm (best-effort)
+            sudo systemctl restart php8.2-fpm || sudo systemctl restart php8.1-fpm || true
+
+            echo "Deploy finished successfully"
